@@ -2,12 +2,15 @@ package br.com.alura.screenmatch.principal;
 
 import br.com.alura.screenmatch.model.DadosSerie;
 import br.com.alura.screenmatch.model.DadosTemporada;
+import br.com.alura.screenmatch.model.Serie;
 import br.com.alura.screenmatch.service.ConsumoApi;
 import br.com.alura.screenmatch.service.ConverteDados;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 public class Principal {
 
@@ -20,46 +23,55 @@ public class Principal {
     private final String API_KEY = "&apikey=51f2f2bc";
 
     public void exibeMenu() {
-        var menu = """
-                1 - Buscar séries
-                2 - Buscar episódios
-                3 - Listar séries buscadas
-                
-                0 - Sair
-                """;
+        int opcao;
 
-        System.out.println(menu);
+        do {
+            var menu = """
+                    \n1 - Buscar séries
+                    2 - Buscar episódios
+                    3 - Listar séries buscadas
+                    
+                    0 - Sair
+                    """;
 
-        var opcao = leitura.nextInt();
-        leitura.nextLine();
+            System.out.println(menu);
+            System.out.print("Escolha: ");
 
-        switch (opcao) {
-            case 1:
-                buscarSerieWeb();
-                break;
-            case 2:
-                buscarEpisodioPorSerie();
-                break;
-            case 3:
-                listarSeriesBuscadas();
-                break;
-            case 0:
-                System.out.println("Saindo...");
-                break;
-            default:
-                System.out.println("Opção inválida");
-        }
+            opcao = leitura.nextInt();
+            leitura.nextLine();
+
+            switch (opcao) {
+                case 1:
+                    buscarSerieWeb();
+                    break;
+                case 2:
+                    buscarEpisodioPorSerie();
+                    break;
+                case 3:
+                    listarSeriesBuscadas();
+                    break;
+                case 0:
+                    System.out.println("Saindo...");
+                    break;
+                default:
+                    System.out.println("Opção inválida");
+            }
+        } while (opcao != 0);
     }
 
     private void buscarSerieWeb() {
         DadosSerie dados = getDadosSerie();
 
-        seriesBuscadas.add(dados);
-        System.out.println(dados);
+        if (dados.titulo() != null) {
+            seriesBuscadas.add(dados);
+            System.out.println(dados);
+        } else {
+            System.out.println("Série não encontrada.");
+        }
     }
 
     private DadosSerie getDadosSerie() {
-        System.out.println("Digite o nome da série para busca");
+        System.out.print("Digite o nome da série para busca: ");
 
         var nomeSerie = leitura.nextLine();
         var json = consumo.obterDados(ENDERECO + nomeSerie.replace(" ", "+") + API_KEY);
@@ -82,6 +94,14 @@ public class Principal {
     }
 
     private void listarSeriesBuscadas() {
-        seriesBuscadas.forEach(System.out::println);
+        List<Serie> series = new ArrayList<>();
+
+        series = seriesBuscadas.stream()
+                .map(d -> new Serie(d))
+                .collect(Collectors.toList());
+
+        series.stream()
+                .sorted(Comparator.comparing(Serie::getGenero))
+                .forEach(System.out::println);
     }
 }
