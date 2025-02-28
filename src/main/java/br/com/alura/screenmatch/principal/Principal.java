@@ -113,6 +113,7 @@ public class Principal {
                     .collect(Collectors.toList());
 
             serieEncontrada.setEpisodios(episodios);
+            repositorio.save(serieEncontrada);
 
         } else {
             System.out.println("Série não encontrada");
